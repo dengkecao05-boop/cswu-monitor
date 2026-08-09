@@ -1,0 +1,24 @@
+name: Test ServerChan notification
+
+on:
+  push:
+    paths:
+      - ".github/workflows/test-serverchan.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Send test notification
+        env:
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+        run: python monitor.py --config config.github.json --test-push
