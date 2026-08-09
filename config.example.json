@@ -1,0 +1,45 @@
+{
+  "state_file": "state.json",
+  "first_run_notify": false,
+  "notify": {
+    "provider": "serverchan",
+    "title_prefix": "学校官方新内容"
+  },
+  "sources": [
+    {
+      "name": "官方微博",
+      "platform": "微博",
+      "enabled": true,
+      "type": "rss",
+      "url": "${RSSHUB_BASE:-https://rsshub.app}/weibo/user/2795108742",
+      "poll_limit": 10
+    },
+    {
+      "name": "官方微信公众号",
+      "platform": "微信公众号",
+      "enabled": false,
+      "type": "rss",
+      "url": "${RSSHUB_BASE}/newrank/wechat/cswucq",
+      "poll_limit": 10,
+      "note": "需要自建 RSSHub 并配置 NEWRANK_COOKIE 后启用。"
+    },
+    {
+      "name": "官方抖音号",
+      "platform": "抖音",
+      "enabled": false,
+      "type": "rss",
+      "url": "${RSSHUB_BASE}/douyin/user/填写抖音UID",
+      "poll_limit": 10,
+      "note": "需要拿到抖音 UID；建议自建 RSSHub 并启用 Puppeteer。"
+    },
+    {
+      "name": "官方视频号",
+      "platform": "视频号",
+      "enabled": false,
+      "type": "rss",
+      "url": "填写第三方服务提供的RSS地址",
+      "poll_limit": 10,
+      "note": "视频号没有稳定公开 RSS，需要第三方源或登录态自动化。"
+    }
+  ]
+}
