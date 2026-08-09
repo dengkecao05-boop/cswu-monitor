@@ -62,6 +62,19 @@ def request_text(url, timeout=DEFAULT_TIMEOUT):
         return raw.decode(encoding, errors="replace")
 
 
+def request_final_url(url, timeout=DEFAULT_TIMEOUT):
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return response.geturl()
+
+
 def strip_html(text):
     if not text:
         return ""
@@ -173,11 +186,20 @@ def collect_new_items(config, state):
     for source in config.get("sources", []):
         if not source.get("enabled", False):
             continue
-        if source.get("type") != "rss":
-            errors.append(f"{source.get('name', '未命名来源')}：暂不支持的类型 {source.get('type')}")
+
+        source_type = source.get("type")
+        if source_type == "rss":
+            url = expand_env(source.get("url", ""))
+        elif source_type == "douyin_share":
+            try:
+                url = resolve_douyin_feed_url(source)
+            except Exception as exc:
+                errors.append(f"{source.get('name', '未命名来源')}：抖音短链接暂时无法解析，{exc}")
+                continue
+        else:
+            errors.append(f"{source.get('name', '未命名来源')}：暂不支持的类型 {source_type}")
             continue
 
-        url = expand_env(source.get("url", ""))
         if "${" in url or not url.startswith(("http://", "https://")):
             errors.append(f"{source.get('name', '未命名来源')}：RSS 地址未配置完整")
             continue
@@ -205,6 +227,30 @@ def collect_new_items(config, state):
     state["seen"] = trim_seen(seen)
     state["last_run"] = datetime.now(timezone.utc).isoformat()
     return new_items, errors
+
+
+def resolve_douyin_feed_url(source):
+    base = expand_env(source.get("rsshub_base", "${RSSHUB_BASE:-https://rsshub.app}")).rstrip("/")
+    share_url = source.get("share_url", "")
+    uid = source.get("uid") or source.get("sec_uid")
+
+    if not uid and share_url:
+        final_url = request_final_url(share_url)
+        patterns = [
+            r"/user/([^/?#]+)",
+            r"[?&]sec_uid=([^&#]+)",
+            r"[?&]uid=([^&#]+)",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, final_url)
+            if match:
+                uid = urllib.parse.unquote(match.group(1))
+                break
+
+    if not uid:
+        raise ValueError("请提供抖音用户主页链接或 uid/sec_uid")
+
+    return f"{base}/douyin/user/{urllib.parse.quote(uid, safe='')}"
 
 
 def format_message(items, errors):
@@ -308,8 +354,11 @@ def run(config_path, test_push=False):
         print(f"已推送 {len(new_items)} 条新内容")
         return 0
 
-    print(format_message([], errors), file=sys.stderr)
-    return 1
+    if errors:
+        print(format_message([], errors), file=sys.stderr)
+        return 1 if config.get("fail_on_errors", False) else 0
+
+    return 0
 
 
 def main():

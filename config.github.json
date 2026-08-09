@@ -1,6 +1,7 @@
 {
   "state_file": "state.json",
   "first_run_notify": false,
+  "fail_on_errors": false,
   "notify": {
     "provider": "serverchan",
     "title_prefix": "学校官方新内容"
@@ -11,26 +12,28 @@
       "platform": "微博",
       "enabled": true,
       "type": "rss",
-      "url": "${RSSHUB_BASE:-https://rsshub.app}/weibo/user/2795108742",
+      "url": "${RSSHUB_BASE:-https://rsshub.app}/weibo/user/2795108742/1",
+      "homepage": "https://weibo.com/cqcmc",
       "poll_limit": 10
     },
     {
       "name": "官方微信公众号",
       "platform": "微信公众号",
-      "enabled": false,
+      "enabled": true,
       "type": "rss",
-      "url": "${RSSHUB_BASE}/newrank/wechat/cswucq",
+      "url": "${RSSHUB_BASE:-https://rsshub.app}/wechat/uread/cswucq",
       "poll_limit": 10,
-      "note": "需要自建 RSSHub 并配置 NEWRANK_COOKIE 后启用。"
+      "article_example": "https://mp.weixin.qq.com/s/noduFoh-No1ChqrQjZ1_rQ",
+      "note": "优读来源不是所有公众号都稳定支持；如果后续漏报，可换成自建 RSSHub 的 newrank/wechat/cswucq。"
     },
     {
       "name": "官方抖音号",
       "platform": "抖音",
-      "enabled": false,
-      "type": "rss",
-      "url": "${RSSHUB_BASE}/douyin/user/填写抖音UID",
+      "enabled": true,
+      "type": "douyin_share",
+      "share_url": "https://v.douyin.com/B4w3uyoiK9k/",
       "poll_limit": 10,
-      "note": "需要拿到抖音 UID；建议自建 RSSHub 并启用 Puppeteer。"
+      "note": "程序会先尝试展开短链接并解析抖音 uid/sec_uid；抖音反爬严格，如果 GitHub 解析失败，需要补充抖音用户主页长链接或 uid/sec_uid。"
     },
     {
       "name": "官方视频号",
@@ -39,7 +42,7 @@
       "type": "rss",
       "url": "填写第三方服务提供的RSS地址",
       "poll_limit": 10,
-      "note": "视频号没有稳定公开 RSS，需要第三方源或登录态自动化。"
+      "note": "微信视频号没有公开 RSS，也没有可复制的稳定主页源；需要第三方视频号监控服务、WeChat 登录态自动化，或学校同步到公众号/抖音/微博后间接监控。"
     }
   ]
 }
