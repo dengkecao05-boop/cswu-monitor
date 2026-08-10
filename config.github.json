@@ -1,6 +1,7 @@
 {
   "state_file": "state.json",
-  "first_run_notify": false,
+  "first_run_notify": true,
+  "first_run_notify_limit": 1,
   "fail_on_errors": false,
   "notify": {
     "provider": "serverchan",

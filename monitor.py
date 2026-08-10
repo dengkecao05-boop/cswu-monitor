@@ -212,7 +212,8 @@ def collect_new_items(config, state):
             continue
 
         limit = int(source.get("poll_limit", 10))
-        for item in items[:limit]:
+        first_run_notify_limit = int(config.get("first_run_notify_limit", 1))
+        for index, item in enumerate(items[:limit]):
             if item["id"] not in seen:
                 seen[item["id"]] = {
                     "title": item["title"],
@@ -221,7 +222,10 @@ def collect_new_items(config, state):
                     "link": item["link"],
                     "seen_at": datetime.now(timezone.utc).isoformat(),
                 }
-                if config.get("first_run_notify", False) or not first_run:
+                if not first_run or (
+                    config.get("first_run_notify", False)
+                    and index < first_run_notify_limit
+                ):
                     new_items.append(item)
 
     state["seen"] = trim_seen(seen)
